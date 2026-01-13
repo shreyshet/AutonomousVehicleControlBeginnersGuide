@@ -24,7 +24,8 @@ from time_parameters import TimeParameters
 from vehicle_specification import VehicleSpecification
 from state import State
 from four_wheels_vehicle import FourWheelsVehicle
-
+from tractor_trailer_vehicle import TractorTrailerVehicle
+from tractor_trailer_state import TractorTrailerState
 
 # flag to show plot figure
 # when executed as unit test, this flag is set as false
@@ -32,25 +33,23 @@ show_plot = True
 
 
 def main():
-    """
-    Main process function
-    """
+    x_lim, y_lim = MinMax(-50, 50), MinMax(-50, 50)
+    vis = GlobalXYVisualizer(x_lim, y_lim, TimeParameters(span_sec=30), show_zoom=False)
+
+    spec = VehicleSpecification()
+    spec.trailer_len_m = 7.0  # Length of the trailer
     
-    # set simulation parameters
-    x_lim, y_lim = MinMax(-30, 30), MinMax(-30, 30)
-    vis = GlobalXYVisualizer(x_lim, y_lim, TimeParameters(span_sec=20), show_zoom=False)
+    # Start with both aligned at 0 rad
+    state = TractorTrailerState(x_m=0, y_m=0, yaw_rad=0.1, trailer_yaw_rad=0.0, speed_mps=2.0)
+    vehicle = TractorTrailerVehicle(state, spec, show_zoom=False)
 
-    # create vehicle
-    spec = VehicleSpecification() # specification
-    vehicle = FourWheelsVehicle(State(), spec, show_zoom=False) # set state and spec
-
-    # add objects here
     vis.add_object(vehicle)
-
-    # plot figure is not shown when executed as unit test
-    if not show_plot: vis.not_show_plot()
-
-    # show plot figure
+    
+    # Manually adding a steering input to see the articulation
+    # In a real sim, you'd use a controller here
+    def control_loop(time_s):
+        vehicle.update(0.1, 0.05, time_s) # Slow accel + constant turn
+    
     vis.draw()
 
 

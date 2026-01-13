@@ -156,3 +156,30 @@ class State:
         elems.append(hist_plot)
 
         elems.append(axes.text(self.x_m, self.y_m + 2, "Speed: " + str(round(self.speed_mps * 3.6, 1)) + "[km/h]", fontsize=10))
+
+class TractorTrailerState(State):
+    def __init__(self, x_m=0.0, y_m=0.0, yaw_rad=0.0, trailer_yaw_rad=0.0, speed_mps=0.0, color='k'):
+        super().__init__(x_m, y_m, yaw_rad, speed_mps, color)
+        self.trailer_yaw_rad = trailer_yaw_rad
+        self.trailer_yaw_history = [self.trailer_yaw_rad]
+
+    def update(self, accel_mps2, yaw_rate_rps, time_s, trailer_l_m=5.0):
+        # 1. Standard Tractor Update (Reuse your existing logic)
+        last_state = np.array([[self.x_m], [self.y_m], [self.yaw_rad], [self.speed_mps]])
+        next_input = np.array([[accel_mps2], [yaw_rate_rps]])
+        next_state = self.motion_model(last_state, next_input, time_s)
+
+        # 2. Trailer Physics (Kinematic Articulation)
+        # The change in trailer yaw depends on the velocity and sine of angle difference
+        yaw_diff = self.yaw_rad - self.trailer_yaw_rad
+        trailer_yaw_rate = (self.speed_mps / trailer_l_m) * sin(yaw_diff)
+        
+        # Apply updates
+        self.x_m, self.y_m = next_state[0, 0], next_state[1, 0]
+        self.yaw_rad = next_state[2, 0]
+        self.speed_mps = next_state[3, 0]
+        self.trailer_yaw_rad += trailer_yaw_rate * time_s
+
+        self.x_history.append(self.x_m)
+        self.y_history.append(self.y_m)
+        self.trailer_yaw_history.append(self.trailer_yaw_rad)

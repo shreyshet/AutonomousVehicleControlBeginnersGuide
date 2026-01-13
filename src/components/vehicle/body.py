@@ -41,3 +41,19 @@ class Body:
         body_plot, = axes.plot(transformed_array.get_x_data(), transformed_array.get_y_data(), 
                                lw=self.spec.line_w, color=self.spec.color, ls=self.spec.line_type)
         elems.append(body_plot)
+
+class TrailerBody(Body):
+    def __init__(self, spec):
+        super().__init__(spec)
+        # Trailer-specific contour: longer and wider than the tractor
+        # The origin (0,0) for the trailer is its hitch point
+        contour = np.array([[0.0, -spec.trailer_len_m, -spec.trailer_len_m, 0.0, 0.0],
+                            [spec.width_m, spec.width_m, -spec.width_m, -spec.width_m, spec.width_m]])
+        self.array = XYArray(contour)
+
+    def draw(self, axes, x, y, yaw, elems):
+        # Transform based on hitch position (x,y) and trailer yaw
+        transformed_array = self.array.homogeneous_transformation(x, y, yaw)
+        plot, = axes.plot(transformed_array.get_x_data(), transformed_array.get_y_data(), 
+                          lw=self.spec.line_w, color=self.spec.color)
+        elems.append(plot)
