@@ -44,7 +44,7 @@ def main():
     vis = GlobalXYVisualizer(x_lim, y_lim, TimeParameters(span_sec=25))
 
     # create course data instance
-    course = CubicSplineCourse([0.0, 10.0, 25, 40, 50],
+    course = CubicSplineCourse([0.0, 5.0, 40, 40, 50],
                                [0.0, 4, -12, 20, -13],
                                20)
     vis.add_object(course)
